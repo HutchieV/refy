@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", "Open Sans", "Lato", "Helvetica";
+}
+
+body {
+  margin: 0;
+  padding: 0;
+
+  width: 100vw;
+  height: 100vh;
+}
+
+.board-main {
+  width: 100%;
+  height: 100%;
+  background-color: green;
+}
+
+.board-nav {
+  position: fixed;
+  top: 1.5rem;  
+  left: 1.5rem;
+  z-index: 100;
+  
+  display: flex;
+  flex-direction: column;
+}
+
+.board-nav-e {
+  position: relative;
+  background-color: rgb(255, 255, 255);
+  border-radius: 1rem;
+  border: 1px solid grey;
+  padding: 1rem;
+  margin: 0.5rem;
+}
+
+.board {
+  width: 2000px;
+  height: 2000px;
+  background-color: rgb(255, 243, 243);
+
+  display: flex;
+  justify-content: center;
+  align-items: start;
+}
+
+.board-img {
+  position: absolute;
+  cursor: move;
+  z-index: 10;
+  min-height: 50px;
+  width: auto;
+  transform: rotate(1deg);
+}
