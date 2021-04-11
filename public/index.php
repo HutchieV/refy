@@ -145,7 +145,9 @@
        */
       function dragElement(elmnt) {
         var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-        var startHeight = 0;
+        var imgX = 0, imgY = 0;
+        var startHeight   = 0;
+        var startRotation = 0;
         elmnt.onmousedown = dragMouseDown;
 
         function getCenterX() {
@@ -164,26 +166,85 @@
           return e.clientY;
         }
 
+        function diff(x, y) {
+          return Math.abs(x - y);
+        }
+
         function getSectorOfCursor(imgX, imgY, curX, curY) {
-          if(curX > imgX && curY > imgY) {
-            return 2; // Bottom Right
+          if(curY < imgY && (Math.abs(curX - imgX) < Math.abs(curY - imgY))) {
+            if(curX < imgX) return 8; // Top left
+            return 1; // Top right
           }
-          else if(curX > imgX && curY < imgY) {
-            return 1; // Top Right
+          else if(curX > imgX && (Math.abs(curY - imgY) < Math.abs(curX - imgX))) {
+            if(curY < imgY) return 2; // Right top
+            return 3; // Right bottom
           }
-          else if(curX < imgX && curY > imgY) {
-            return 3; // Bottom Left
+          else if(curY > imgY && (Math.abs(curX - imgX) < Math.abs(curY - imgY))) {
+            if(curX > imgX) return 4; // Bottom left
+            return 5; // Bottom right
           }
-          else if(curX < imgX && curY < imgY) {
-            return 4;  // Top Left
+          else if(curX < imgX && (Math.abs(curY - imgY) < Math.abs(curX - imgX))) {
+            if(curY > imgY) return 6; // Left bottom
+            return 7;  // Left top
+          }
+        }
+
+        function toDegrees(a) {
+          return (a * (180 / Math.PI));
+        }
+
+        function getAngleFromCursor(imgX, imgY, curX, curY) {
+          var a = Math.abs(curX - imgX);
+          var b = Math.abs(curY - imgY);
+          var c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+
+          var o = 0;
+          (a < b) ? o = a : o = b;
+
+          var d = Math.abs(toDegrees(Math.asin(o / c)));
+
+          switch(getSectorOfCursor(imgX, imgY, curX, curY)) {
+            case 1:
+              return d;
+              break;
+            case 2:
+              return (45 - d) + 45;
+              break;
+            case 3:
+              return d + 90;
+              break;
+            case 4:
+              return (45 - d) + 135;
+              break;
+            case 5:
+              return d + 180;
+              break;
+            case 6:
+              return (45 - d) + 225;
+              break;
+            case 7:
+              return d + 270;
+              break;
+            case 8:
+              return (45 - d) + 315;
+              break;
+            default: 
+              return undefined;
+              break;
           }
         }
 
         function dragMouseDown(e) {
+          imgX = getCenterX();
+          imgY = getCenterY();
+
           document.getElementById("sectorDebug").innerHTML  = `<p><strong>Stats at start</strong></p>`;
           document.getElementById("sectorDebug").innerHTML += `<p>Image center: ` + getCenterX() + `, ` + getCenterY() + `</p>`;
           document.getElementById("sectorDebug").innerHTML += `<p>Cursor pos: ` + getCursorX(e) + `, ` + getCursorY(e) + `</p>`;
-          document.getElementById("sectorDebug").innerHTML += `<p>Sector: ` + getSectorOfCursor(getCenterX(), getCenterY(), getCursorX(e), getCursorY(e)) + `</p>`;
+          document.getElementById("sectorDebug").innerHTML += `<p>Sector: ` + getSectorOfCursor(imgX, imgY, getCursorX(e), getCursorY(e)) + `</p>`;
+          document.getElementById("sectorDebug").innerHTML += `<p>Angle: ` + getAngleFromCursor(imgX, imgY, getCursorX(e), getCursorY(e)) + `</p>`;
+
+          startRotation = getAngleFromCursor(getCenterX(), getCenterY(), getCursorX(e), getCursorY(e));
 
           e = e || window.event;
           e.preventDefault();
@@ -217,9 +278,11 @@
           e = e || window.event;
           e.preventDefault();
           pos1 = pos3 - e.clientX;
-          document.getElementById("resizeDebug").innerHTML = `<p>New rotation: `+((1+pos1))%360+`</p>`;
 
-          // elmnt.style.transform = `rotate(`+((1+pos1))%360+`deg)`;
+          var newRot = -(startRotation - getAngleFromCursor(imgX, imgY, e.clientX, e.clientY));
+          document.getElementById("resizeDebug").innerHTML = `<p>New rotation: `+ newRot +`</p>`;
+
+          elmnt.style.transform = `rotate(`+newRot+`deg)`;
         }
 
         function closeElementRotate() {
